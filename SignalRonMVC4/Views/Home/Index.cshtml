@@ -1,0 +1,103 @@
+﻿
+<div class="navbar navbar-inverse navbar-fixed-top" >
+    <div class="navbar-inner">
+        <div class="container">
+            <a class="brand" href="#">SignalR Test</a>
+            <div class="nav-collapse collapse">
+                <form class="navbar-form pull-right">
+                    <input type="text" id="txtName" placeholder="your name" class="span2"/>.
+                    <input type="button" id="btnStart" value="Enter" class="btn"/>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <h3>Enter name and start chat by SignalR!</h3>
+    <div id="pnlBody" class="row" style="display:none">
+        <div class="span10">
+            <h4 id="lblName" style="border-bottom:1px solid silver"></h4>
+            <input type="text" id="txtMsg" class="span9" placeholder="Enter Message" style="margin-top:10px"> <input id="btnSend" type="button" class="btn" value="Send"/>
+            <div id="pnlMessage" style="width:90%">
+            </div>
+        </div>
+        <input type="hidden" id="hdnName">
+
+    </div>
+</div>
+
+<link href="~/Content/bootstrap-responsive.min.css" rel="stylesheet" />
+<link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+
+<script src="~/Scripts/jquery-1.9.1.min.js"></script>
+<script src="~/Scripts/jquery.signalR-1.1.1.min.js"></script>
+<script src="~/signalr/hubs"></script>
+<script src="~/Scripts/bootstrap.min.js"></script>
+
+<style>
+    body {
+        padding-top:50px;
+    }
+    .msg-panel span{
+        font-weight:bold;
+        font-size:1.6em;
+    }
+    .msg-panel{
+        margin:5px 0px 15px 0px;
+        border-top:2px solid silver;
+    }
+    .msg-panel div {
+        padding-left:5px;
+    }
+
+</style>
+<script>
+    $(function () {
+        $("#btnStart").focus();
+        var hellow = $.connection.hellowWorldHub;
+
+        hellow.client.getName = function(name){
+            $("#hdnName").val(name);
+            $("#lblName").text("Wellcome " + name + "!");
+            $("#btnSend").focus();
+        }
+
+        hellow.client.getMessage = function(name,msg){
+            $("#pnlMessage").prepend("<div class='msg-panel'><span>" + name + "</span><div>" + msg + "</div></div>")
+        }
+
+        $.connection.hub.start().done(function(){
+            var hubObj = {};
+            hubObj.enter = function(name){
+                hellow.server.enter(name);
+            }
+            hubObj.send = function(msg){
+                var name = $("#hdnName").val();
+                hellow.server.send(name,msg);
+            }
+
+            //Event Hundling
+            $("#btnStart").click(function () {
+                if ($("#txtName").val() !== "") {
+                    $("#pnlBody").show();
+                    hubObj.enter($("#txtName").val());
+                } else {
+                    alert("please enter your name.")
+                }
+            })
+
+            $("#btnSend").click(function () {
+                if ($("#txtMsg").val() !== "") {
+                    hubObj.send($("#txtMsg").val());
+                } else {
+                    alert("please enter your message.")
+                }
+            })
+
+        })
+
+    })
+</script>
+
+
